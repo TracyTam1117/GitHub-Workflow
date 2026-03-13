@@ -1,0 +1,46 @@
+# Team Workflow on push
+name: Team Workflow
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  update_html_and_readme:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Step 1: Checkout repo
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      # Step 2: Update Index HTML
+      - name: Update HTML
+        run: |
+          # Team Leader Update index.HTML
+          if [ "${{ github.actor }}" == "TracyTam1117" ]; then
+            sed -i '/<\/body>/i <p>Updated by Team Leader on '"$(date)"'</p>' index.html
+          fi
+
+          # Member 1
+          if [ "${{ github.actor }}" == "member1_username" ]; then
+            sed -i '/<\/body>/i <p>Updated by Member 1 on '"$(date)"'</p>' index.html
+          fi
+
+      # Step 3: Update README
+      - name: Update README
+        run: |
+          echo "### Updated by ${{ github.actor }} on $(date '+%Y-%m-%d %H:%M:%S') [Commit: $(git rev-parse --short HEAD)]" >> README.md
+
+      # Step 4: Commit changes back to the repository
+      - name: Commit and Push changes
+        run: |
+          git config --global user.name "github-actions"
+          git config --global user.email "github-actions@users.noreply.github.com"
+          git add .
+          git commit -m "Workflow: Updated HTML and README for ${{ github.actor }}"
+          git remote set-url origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}
+          git push
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
